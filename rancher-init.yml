@@ -174,14 +174,6 @@
           timeout: 120
           state: started
 
-      - name: Waiting for port 80
-        wait_for:
-          host: "{{ rancher_public[0] }}"
-          port: 80
-          delay: 60
-          timeout: 120
-          state: started
-
       - name: Provide instance IP for login and initial setup
         debug: 
           msg: "Please login to https://{{ rancher_public[0] }} and finish configuration for initial Rancher cluster setup"
