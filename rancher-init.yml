@@ -19,14 +19,6 @@
           path: /tmp/rancher_id_rsa
           state: absent
 
-      #- name: Generating public key for rancher nodes
-      #  shell: /usr/bin/ssh-keygen -o -C "rancher key" -q -N "" -f /tmp/rancher_id_rsa
-
-      #- name: Make sure pubkey is 600
-      #  file:
-      #    path: /tmp/rancher_id_rsa.pub
-      #    mode: 0600
-
       - name: Generate Rancher Cluster Keypair
         shell: >
           {{ aws_location.stdout }} ec2 create-key-pair --profile {{ aws_profile }}
@@ -43,15 +35,6 @@
           path: /tmp/rancher_id_rsa
           mode: 0600
           state: file
-
-      #- name: Archiving generated keys
-      #  shell: tar -cvf /tmp/ssh_keys.tar /tmp/rancher_id_rsa.pub /tmp/rancher_id_rsa
-
-      #- name: Cat the public key for debug purposes but don't store them
-      #  shell: cat /tmp/rancher_id_rsa.pub
-
-      #- name: Cat the private key for debug purposes but don't store it
-      #  shell: cat /tmp/rancher_id_rsa
 
       - name: Generate Rancher Cluster Security Group
         shell: >
