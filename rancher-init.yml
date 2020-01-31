@@ -113,6 +113,9 @@
         with_items:
           - "{{ rancher_public_ips.stdout_lines }}"
 
+      - set_fact:
+        rancher_ips: "{{ rancher_public_ips.stdout_lines }}"
+
       - name: Waiting for ssh
         wait_for:
           host: "{{ item }}"
@@ -168,7 +171,7 @@
 
       - name: Waiting for port 443
         wait_for:
-          host: "{{ rancher_public[0] }}"
+          host: "{{ rancher_zero | first }}"
           port: 443
           delay: 60
           timeout: 120
@@ -176,9 +179,9 @@
 
       - name: Provide instance IP for login and initial setup
         debug: 
-          msg: "Please login to https://{{ rancher_public[0] }} and finish configuration for initial Rancher cluster setup"
+          msg: "Please login to https://{{ rancher_ips | first }} and finish configuration for initial Rancher cluster setup"
 
       - name: Subsequent IPS for configuration
         debug:
-          msg: "{{ rancher_public_ips.stdout_lines  }}"
+          msg: "{{ rancher_ips  }}"
 
