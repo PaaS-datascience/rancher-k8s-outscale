@@ -114,7 +114,7 @@
           - "{{ rancher_public_ips.stdout_lines }}"
 
       - set_fact:
-        rancher_ips: "{{ rancher_public_ips.stdout_lines }}"
+          rancher_ips: "{{ rancher_public_ips.stdout_lines }}"
 
       - name: Waiting for ssh
         wait_for:
