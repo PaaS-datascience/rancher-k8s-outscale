@@ -1,0 +1,209 @@
+---
+  - name: Launching instances for Rancher cluster
+    hosts: localhost
+    gather_facts: False
+    vars_files:
+      - vars/rancher_cluster.yml
+
+    tasks:
+      - name: Which aws cli
+        shell: which aws
+        register: aws_location
+
+      - name: Generating local uuid
+        shell: /usr/bin/uuidgen
+        register: uuid
+
+      - name: Remove any previously generated key
+        file:
+          path: /tmp/rancher_id_rsa
+          state: absent
+
+      #- name: Generating public key for rancher nodes
+      #  shell: /usr/bin/ssh-keygen -o -C "rancher key" -q -N "" -f /tmp/rancher_id_rsa
+
+      #- name: Make sure pubkey is 600
+      #  file:
+      #    path: /tmp/rancher_id_rsa.pub
+      #    mode: 0600
+
+      - name: Generate Rancher Cluster Keypair
+        shell: >
+          {{ aws_location.stdout }} ec2 create-key-pair --profile {{ aws_profile }}
+          --key-name rancher-cluster-{{ uuid.stdout }}
+          --endpoint {{ outscale_endpoint }}
+          --query 'KeyMaterial'
+          --output text > /tmp/rancher_id_rsa
+        register: cluster_keypair
+
+      - debug: msg="{{ cluster_keypair }}"
+
+      - name: Set key mode
+        file:
+          path: /tmp/rancher_id_rsa
+          mode: 0600
+          state: file
+
+      #- name: Archiving generated keys
+      #  shell: tar -cvf /tmp/ssh_keys.tar /tmp/rancher_id_rsa.pub /tmp/rancher_id_rsa
+
+      #- name: Cat the public key for debug purposes but don't store them
+      #  shell: cat /tmp/rancher_id_rsa.pub
+
+      #- name: Cat the private key for debug purposes but don't store it
+      #  shell: cat /tmp/rancher_id_rsa
+
+      - name: Generate Rancher Cluster Security Group
+        shell: >
+          {{ aws_location.stdout }} ec2 create-security-group --profile {{ aws_profile }}
+          --group-name rancher-cluster-{{ uuid.stdout }}
+          --description "Rancher Cluster"
+          --endpoint {{ outscale_endpoint }}
+          --output json | jq -r .GroupId
+        register: secgroup
+
+      # When a standard is figured out and networking is addressed
+      # this will be aligned with the ports needed for custom nodes
+      - name: Applying default ingress for all nodes
+        shell: >
+          {{ aws_location.stdout }} ec2 authorize-security-group-ingress --profile {{ aws_profile }}
+          --group-name rancher-cluster-{{ uuid.stdout }} --region "{{ outscale_region }}"
+          --endpoint-url "{{ outscale_endpoint }}"
+          --cli-input-json file://"{{ security_ingress }}"
+
+      - name: Launch Outscale instances
+        shell: >
+          {{ aws_location.stdout }} ec2 run-instances 
+          --profile "{{ aws_profile }}"
+          --image-id "{{ outscale_rancher_image }}"
+          --key-name "rancher-cluster-{{ uuid.stdout }}"
+          --instance-type "{{ outscale_instance_type }}"
+          --count "{{ rancher_node_count }}"
+          --endpoint "{{ outscale_endpoint }}"
+          --security-group-ids "{{ secgroup.stdout }}"
+          --output json | jq -r .Instances[].InstanceId
+        register: fcu_instance
+
+      - debug: msg="{{ fcu_instance }}"
+
+      - name: Remove file (delete file)
+        file:
+          path: /tmp/outscale.instance.info
+          state: absent
+
+      - name: Write metadata to temp file
+        lineinfile:
+          path: /tmp/outscale.instance.info
+          line: "{{ fcu_instance.stdout_lines | to_json }}"
+          create: yes
+          mode: '0700'
+
+      - name: Collect instance ids
+        debug: msg="{{ lookup('file', '/tmp/outscale.instance.info') }}"
+        register: rancher_instances
+
+      - debug: msg="{{ rancher_instances.msg }}"
+
+      - name: Remove and touch
+        shell: rm /tmp/outscale.instance.info ; touch /tmp/outscale.instance.info
+
+      - name: Need to run describe to get more metadata
+        shell: >
+              {{ aws_location.stdout }} ec2 describe-instances
+              --profile "{{ aws_profile }}"
+              --instance-id "{{ item }}"
+              --endpoint "{{ outscale_endpoint }}"
+              --output json | jq -r .Reservations[].Instances[].PublicIpAddress >> /tmp/outscale.instance.info
+        loop: "{{ rancher_instances.msg }}"
+        register: fcu_instances_publicips
+
+      - name: Collect instance ips
+        shell: cat /tmp/outscale.instance.info
+        register: rancher_public_ips
+      
+      - debug: msg="{{ rancher_public_ips.stdout_lines }}"
+
+      - name: Adding rancher public ips
+        add_host:
+          hostname: "{{ item }}"
+          groupname: rancher_public
+        with_items:
+          - "{{ rancher_public_ips.stdout_lines }}"
+
+      - name: Waiting for ssh
+        wait_for:
+          host: "{{ item }}"
+          port: 22
+          delay: 5
+          timeout: 60
+          state: started
+        with_items:
+          - "{{ rancher_public_ips.stdout_lines }}"
+
+  - name: Rancher node configuration
+    hosts: rancher_public[0]
+    gather_facts: True
+    become: True
+    tasks:
+      - name: Updating apt
+        apt: 
+          update_cache: yes
+        become: yes
+        become_user: root
+        retries: 5
+        delay: 20
+        register: ecode
+        until: ecode is success
+
+      - name: Upgrading packages
+        apt: 
+          upgrade: yes
+        retries: 5
+        delay: 20
+        register: ecode
+        until: ecode is success
+
+      - name: Install docker
+        apt:
+          state: present
+          pkg: docker.io
+          
+      - name: Run rancher
+        shell: >
+          docker run -d --restart=unless-stopped -p 80:80 -p 443:443 rancher/rancher
+
+      - name: Download Rancher CLI onto all nodes
+        get_url:
+          url: https://github.com/rancher/cli/releases/download/v2.3.2/rancher-linux-amd64-v2.3.2.tar.xz
+          dest: /tmp/rancher-linux-amd64-v2.3.2.tar.xz
+
+      - name: Unarchive Rancher 2.3.2 
+        unarchive:
+          src: /tmp/rancher-linux-amd64-v2.3.2.tar.xz
+          dest: /usr/local
+          remote_src: yes
+
+      - name: Waiting for port 443
+        wait_for:
+          host: "{{ rancher_public[0] }}"
+          port: 443
+          delay: 60
+          timeout: 120
+          state: started
+
+      - name: Waiting for port 80
+        wait_for:
+          host: "{{ rancher_public[0] }}"
+          port: 80
+          delay: 60
+          timeout: 120
+          state: started
+
+      - name: Provide instance IP for login and initial setup
+        debug: 
+          msg: "Please login to https://{{ rancher_public[0] }} and finish configuration for initial Rancher cluster setup"
+
+      - name: Subsequent IPS for configuration
+        debug:
+          msg: "{{ rancher_public_ips.stdout_lines  }}"
+

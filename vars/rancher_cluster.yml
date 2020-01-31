@@ -1,0 +1,8 @@
+---
+outscale_rancher_image: ami-3770adc9
+outscale_endpoint: https://fcu.us-east-2.outscale.com
+outscale_instance_type: "tinav5.c2r4p1"
+outscale_region: us-east-2
+aws_profile: outscale
+rancher_node_count: 3
+security_ingress: rancher-general-ingress.json

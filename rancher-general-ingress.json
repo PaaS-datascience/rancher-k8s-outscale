@@ -1,0 +1,124 @@
+{
+  "IpPermissions": [
+  { 
+  "IpProtocol": "tcp",
+  "FromPort": 22,
+  "ToPort": 22,
+  "IpRanges": [
+                  {
+                  "CidrIp": "8.41.214.11/32"
+                  } 
+              ]
+},
+  {
+  "IpProtocol": "tcp",
+  "FromPort": 80,
+  "ToPort": 80, 
+  "IpRanges": [ 
+                  { 
+                  "CidrIp": "8.41.214.11/32"
+                  } 
+                ]
+  }, 
+  { 
+  "IpProtocol": "tcp", 
+  "FromPort": 443, 
+  "ToPort": 443, 
+  "IpRanges": [ 
+                  { 
+                  "CidrIp": "8.41.214.11/32"
+                  } 
+                ]
+  }, 
+  { 
+  "IpProtocol": "tcp",
+  "FromPort": 2379,
+  "ToPort": 2380,
+  "IpRanges": [
+                  { 
+                  "CidrIp": "8.41.214.11/32"
+                  } 
+                ]
+  }, 
+  { 
+  "IpProtocol": "tcp", 
+  "FromPort": 6443, 
+  "ToPort": 6443, 
+  "IpRanges": [ 
+                  { 
+                  "CidrIp": "8.41.214.11/32"
+                  } 
+                ]
+  }, 
+  { 
+  "IpProtocol": "udp", 
+  "FromPort": 8472, 
+  "ToPort": 8472, 
+  "IpRanges": [ 
+                  { 
+                  "CidrIp": "8.41.214.11/32"
+                  } 
+                ]
+  }, 
+  { 
+  "IpProtocol": "udp", 
+  "FromPort": 4789,
+  "ToPort": 4789,
+  "IpRanges": [ 
+                  { 
+                  "CidrIp": "8.41.214.11/32"
+                  } 
+                ]
+  }, 
+  { 
+  "IpProtocol": "tcp", 
+  "FromPort": 9099, 
+  "ToPort": 9099, 
+  "IpRanges": [ 
+                  { 
+                  "CidrIp": "8.41.214.11/32"
+                  } 
+                ]
+  }, 
+  { 
+  "IpProtocol": "tcp", 
+  "FromPort": 10250, 
+  "ToPort": 10250, 
+  "IpRanges": [ 
+                  { 
+                  "CidrIp": "8.41.214.11/32"
+                  } 
+                ]
+  },
+  {
+  "IpProtocol": "tcp",
+  "FromPort": 10254,
+  "ToPort": 10254, 
+  "IpRanges": [ 
+                  { 
+                  "CidrIp": "8.41.214.11/32"
+                  } 
+                ]
+  }, 
+  { 
+  "IpProtocol": "tcp", 
+  "FromPort": 30000, 
+  "ToPort": 32767, 
+  "IpRanges": [ 
+                  { 
+                  "CidrIp": "8.41.214.11/32"
+                  } 
+                ]
+  }, 
+  { 
+  "IpProtocol": "udp", 
+  "FromPort": 30000, 
+  "ToPort": 32767, 
+  "IpRanges": [ 
+                  { 
+                  "CidrIp": "8.41.214.11/32"
+                  } 
+                ]
+  } 
+]
+}

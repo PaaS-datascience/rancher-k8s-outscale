@@ -1,0 +1,111 @@
+2019-12-10 11:47:23,420 - MainThread - awscli.clidriver - DEBUG - CLI version: aws-cli/1.16.180 Python/3.7.4 Darwin/18.7.0 botocore/1.12.170
+2019-12-10 11:47:23,420 - MainThread - awscli.clidriver - DEBUG - Arguments entered to CLI: ['ec2', 'authorize-security-group-ingress', '--debug', '--profile', 'outscale', '--group-name', 'rancher-cluster-A3A19777-9C37-49DC-B51C-1CEAC5AC3167', '--cli-input-json', 'file://rancher-general-ingress.json']
+2019-12-10 11:47:23,421 - MainThread - botocore.hooks - DEBUG - Event session-initialized: calling handler <function add_scalar_parsers at 0x110fbe8c0>
+2019-12-10 11:47:23,421 - MainThread - botocore.hooks - DEBUG - Event session-initialized: calling handler <function register_uri_param_handler at 0x1109a3b90>
+2019-12-10 11:47:23,421 - MainThread - botocore.hooks - DEBUG - Event session-initialized: calling handler <function inject_assume_role_provider_cache at 0x110a10050>
+2019-12-10 11:47:23,427 - MainThread - botocore.credentials - DEBUG - Skipping environment variable credential check because profile name was explicitly set.
+2019-12-10 11:47:23,427 - MainThread - botocore.hooks - DEBUG - Event session-initialized: calling handler <function attach_history_handler at 0x110e69dd0>
+2019-12-10 11:47:23,430 - MainThread - botocore.loaders - DEBUG - Loading JSON file: /usr/local/Cellar/awscli/1.16.180/libexec/lib/python3.7/site-packages/botocore/data/ec2/2016-11-15/service-2.json
+2019-12-10 11:47:23,478 - MainThread - botocore.hooks - DEBUG - Event building-command-table.ec2: calling handler functools.partial(<function _remove_commands at 0x110f4b950>, commands_to_remove=['import-instance', 'import-volume'])
+2019-12-10 11:47:23,478 - MainThread - awscli.customizations.removals - DEBUG - Removing operation: import-instance
+2019-12-10 11:47:23,478 - MainThread - awscli.customizations.removals - DEBUG - Removing operation: import-volume
+2019-12-10 11:47:23,478 - MainThread - botocore.hooks - DEBUG - Event building-command-table.ec2: calling handler <function add_waiters at 0x110fce4d0>
+2019-12-10 11:47:23,488 - MainThread - botocore.loaders - DEBUG - Loading JSON file: /usr/local/Cellar/awscli/1.16.180/libexec/lib/python3.7/site-packages/botocore/data/ec2/2016-11-15/waiters-2.json
+2019-12-10 11:47:23,490 - MainThread - awscli.clidriver - DEBUG - OrderedDict([('cidr-ip', <awscli.arguments.CLIArgument object at 0x112c3b350>), ('from-port', <awscli.arguments.CLIArgument object at 0x112c3b410>), ('group-id', <awscli.arguments.CLIArgument object at 0x112c3b490>), ('group-name', <awscli.arguments.CLIArgument object at 0x112c3b510>), ('ip-permissions', <awscli.arguments.ListArgument object at 0x112c3b550>), ('ip-protocol', <awscli.arguments.CLIArgument object at 0x112c3b5d0>), ('source-security-group-name', <awscli.arguments.CLIArgument object at 0x112c3b2d0>), ('source-security-group-owner-id', <awscli.arguments.CLIArgument object at 0x112c3b590>), ('to-port', <awscli.arguments.CLIArgument object at 0x112c3b310>), ('dry-run', <awscli.arguments.BooleanArgument object at 0x112c3b710>), ('no-dry-run', <awscli.arguments.BooleanArgument object at 0x112c3b790>)])
+2019-12-10 11:47:23,490 - MainThread - botocore.hooks - DEBUG - Event building-argument-table.ec2.authorize-security-group-ingress: calling handler <function add_streaming_output_arg at 0x110fbeef0>
+2019-12-10 11:47:23,490 - MainThread - botocore.hooks - DEBUG - Event building-argument-table.ec2.authorize-security-group-ingress: calling handler <function rename_arg.<locals>._rename_arg at 0x110fd5710>
+2019-12-10 11:47:23,491 - MainThread - botocore.hooks - DEBUG - Event building-argument-table.ec2.authorize-security-group-ingress: calling handler <function rename_arg.<locals>._rename_arg at 0x110fd57a0>
+2019-12-10 11:47:23,491 - MainThread - botocore.hooks - DEBUG - Event building-argument-table.ec2.authorize-security-group-ingress: calling handler functools.partial(<function pull_up_bool at 0x110fc4dd0>, event_handler=<botocore.hooks.EventAliaser object at 0x10f704ed0>)
+2019-12-10 11:47:23,491 - MainThread - botocore.hooks - DEBUG - Event building-argument-table.ec2.authorize-security-group-ingress: calling handler <function _add_params at 0x110e7d5f0>
+2019-12-10 11:47:23,491 - MainThread - botocore.hooks - DEBUG - Event building-argument-table.ec2.authorize-security-group-ingress: calling handler <function add_cli_input_json at 0x110a11ef0>
+2019-12-10 11:47:23,492 - MainThread - botocore.hooks - DEBUG - Event building-argument-table.ec2.authorize-security-group-ingress: calling handler <function unify_paging_params at 0x110f3dd40>
+2019-12-10 11:47:23,503 - MainThread - botocore.loaders - DEBUG - Loading JSON file: /usr/local/Cellar/awscli/1.16.180/libexec/lib/python3.7/site-packages/botocore/data/ec2/2016-11-15/paginators-1.json
+2019-12-10 11:47:23,503 - MainThread - botocore.hooks - DEBUG - Event building-argument-table.ec2.authorize-security-group-ingress: calling handler <function add_generate_skeleton at 0x110f1bb90>
+2019-12-10 11:47:23,503 - MainThread - botocore.hooks - DEBUG - Event before-building-argument-table-parser.ec2.authorize-security-group-ingress: calling handler <bound method OverrideRequiredArgsArgument.override_required_args of <awscli.customizations.cliinputjson.CliInputJSONArgument object at 0x112c47810>>
+2019-12-10 11:47:23,504 - MainThread - botocore.hooks - DEBUG - Event before-building-argument-table-parser.ec2.authorize-security-group-ingress: calling handler <bound method GenerateCliSkeletonArgument.override_required_args of <awscli.customizations.generatecliskeleton.GenerateCliSkeletonArgument object at 0x112c51e90>>
+2019-12-10 11:47:23,505 - MainThread - botocore.hooks - DEBUG - Event operation-args-parsed.ec2.authorize-security-group-ingress: calling handler functools.partial(<function validate_boolean_mutex_groups at 0x110fc4e60>, boolean_pairs=[])
+2019-12-10 11:47:23,505 - MainThread - botocore.hooks - DEBUG - Event operation-args-parsed.ec2.authorize-security-group-ingress: calling handler <function _check_args at 0x110e814d0>
+2019-12-10 11:47:23,506 - MainThread - botocore.hooks - DEBUG - Event load-cli-arg.ec2.authorize-security-group-ingress.cidr-ip: calling handler <awscli.paramfile.URIArgumentHandler object at 0x110b24190>
+2019-12-10 11:47:23,506 - MainThread - botocore.hooks - DEBUG - Event load-cli-arg.ec2.authorize-security-group-ingress.from-port: calling handler <awscli.paramfile.URIArgumentHandler object at 0x110b24190>
+2019-12-10 11:47:23,506 - MainThread - botocore.hooks - DEBUG - Event load-cli-arg.ec2.authorize-security-group-ingress.group-id: calling handler <awscli.paramfile.URIArgumentHandler object at 0x110b24190>
+2019-12-10 11:47:23,506 - MainThread - botocore.hooks - DEBUG - Event load-cli-arg.ec2.authorize-security-group-ingress.group-name: calling handler <awscli.paramfile.URIArgumentHandler object at 0x110b24190>
+2019-12-10 11:47:23,507 - MainThread - botocore.hooks - DEBUG - Event process-cli-arg.ec2.authorize-security-group-ingress: calling handler <awscli.argprocess.ParamShorthandParser object at 0x110e50d50>
+2019-12-10 11:47:23,507 - MainThread - awscli.arguments - DEBUG - Unpacked value of 'rancher-cluster-A3A19777-9C37-49DC-B51C-1CEAC5AC3167' for parameter "group_name": 'rancher-cluster-A3A19777-9C37-49DC-B51C-1CEAC5AC3167'
+2019-12-10 11:47:23,507 - MainThread - botocore.hooks - DEBUG - Event load-cli-arg.ec2.authorize-security-group-ingress.ip-permissions: calling handler <awscli.paramfile.URIArgumentHandler object at 0x110b24190>
+2019-12-10 11:47:23,507 - MainThread - botocore.hooks - DEBUG - Event load-cli-arg.ec2.authorize-security-group-ingress.ip-protocol: calling handler <awscli.paramfile.URIArgumentHandler object at 0x110b24190>
+2019-12-10 11:47:23,507 - MainThread - botocore.hooks - DEBUG - Event load-cli-arg.ec2.authorize-security-group-ingress.source-security-group-name: calling handler <awscli.paramfile.URIArgumentHandler object at 0x110b24190>
+2019-12-10 11:47:23,508 - MainThread - botocore.hooks - DEBUG - Event load-cli-arg.ec2.authorize-security-group-ingress.source-security-group-owner-id: calling handler <awscli.paramfile.URIArgumentHandler object at 0x110b24190>
+2019-12-10 11:47:23,508 - MainThread - botocore.hooks - DEBUG - Event load-cli-arg.ec2.authorize-security-group-ingress.to-port: calling handler <awscli.paramfile.URIArgumentHandler object at 0x110b24190>
+2019-12-10 11:47:23,508 - MainThread - botocore.hooks - DEBUG - Event load-cli-arg.ec2.authorize-security-group-ingress.dry-run: calling handler <awscli.paramfile.URIArgumentHandler object at 0x110b24190>
+2019-12-10 11:47:23,508 - MainThread - botocore.hooks - DEBUG - Event load-cli-arg.ec2.authorize-security-group-ingress.protocol: calling handler <awscli.paramfile.URIArgumentHandler object at 0x110b24190>
+2019-12-10 11:47:23,509 - MainThread - botocore.hooks - DEBUG - Event load-cli-arg.ec2.authorize-security-group-ingress.port: calling handler <awscli.paramfile.URIArgumentHandler object at 0x110b24190>
+2019-12-10 11:47:23,509 - MainThread - botocore.hooks - DEBUG - Event load-cli-arg.ec2.authorize-security-group-ingress.cidr: calling handler <awscli.paramfile.URIArgumentHandler object at 0x110b24190>
+2019-12-10 11:47:23,509 - MainThread - botocore.hooks - DEBUG - Event load-cli-arg.ec2.authorize-security-group-ingress.source-group: calling handler <awscli.paramfile.URIArgumentHandler object at 0x110b24190>
+2019-12-10 11:47:23,509 - MainThread - botocore.hooks - DEBUG - Event load-cli-arg.ec2.authorize-security-group-ingress.group-owner: calling handler <awscli.paramfile.URIArgumentHandler object at 0x110b24190>
+2019-12-10 11:47:23,509 - MainThread - botocore.hooks - DEBUG - Event load-cli-arg.ec2.authorize-security-group-ingress.cli-input-json: calling handler <awscli.paramfile.URIArgumentHandler object at 0x110b24190>
+2019-12-10 11:47:23,510 - MainThread - botocore.hooks - DEBUG - Event load-cli-arg.ec2.authorize-security-group-ingress.generate-cli-skeleton: calling handler <awscli.paramfile.URIArgumentHandler object at 0x110b24190>
+2019-12-10 11:47:23,510 - MainThread - botocore.hooks - DEBUG - Event calling-command.ec2.authorize-security-group-ingress: calling handler <bound method CliInputJSONArgument.add_to_call_parameters of <awscli.customizations.cliinputjson.CliInputJSONArgument object at 0x112c47810>>
+2019-12-10 11:47:23,510 - MainThread - botocore.hooks - DEBUG - Event calling-command.ec2.authorize-security-group-ingress: calling handler <bound method GenerateCliSkeletonArgument.generate_json_skeleton of <awscli.customizations.generatecliskeleton.GenerateCliSkeletonArgument object at 0x112c51e90>>
+2019-12-10 11:47:23,510 - MainThread - botocore.credentials - DEBUG - Looking for credentials via: assume-role
+2019-12-10 11:47:23,510 - MainThread - botocore.credentials - DEBUG - Looking for credentials via: shared-credentials-file
+2019-12-10 11:47:23,511 - MainThread - botocore.credentials - INFO - Found credentials in shared credentials file: ~/.aws/credentials
+2019-12-10 11:47:23,512 - MainThread - botocore.loaders - DEBUG - Loading JSON file: /usr/local/Cellar/awscli/1.16.180/libexec/lib/python3.7/site-packages/botocore/data/endpoints.json
+2019-12-10 11:47:23,520 - MainThread - botocore.hooks - DEBUG - Event choose-service-name: calling handler <function handle_service_name_alias at 0x1104a1ef0>
+2019-12-10 11:47:23,531 - MainThread - botocore.hooks - DEBUG - Event creating-client-class.ec2: calling handler <function add_generate_presigned_url at 0x11045b950>
+2019-12-10 11:47:23,532 - MainThread - botocore.args - DEBUG - The s3 config key is not a dictionary type, ignoring its value of: None
+2019-12-10 11:47:23,536 - MainThread - botocore.endpoint - DEBUG - Setting ec2 timeout as (60, 60)
+2019-12-10 11:47:23,537 - MainThread - botocore.loaders - DEBUG - Loading JSON file: /usr/local/Cellar/awscli/1.16.180/libexec/lib/python3.7/site-packages/botocore/data/_retry.json
+2019-12-10 11:47:23,537 - MainThread - botocore.client - DEBUG - Registering retry handlers for service: ec2
+2019-12-10 11:47:23,539 - MainThread - botocore.hooks - DEBUG - Event before-parameter-build.ec2.AuthorizeSecurityGroupIngress: calling handler <bound method ParameterAlias.alias_parameter_in_call of <botocore.handlers.ParameterAlias object at 0x1104be9d0>>
+2019-12-10 11:47:23,539 - MainThread - botocore.hooks - DEBUG - Event before-parameter-build.ec2.AuthorizeSecurityGroupIngress: calling handler <function generate_idempotent_uuid at 0x1104c14d0>
+2019-12-10 11:47:23,540 - MainThread - botocore.hooks - DEBUG - Event before-call.ec2.AuthorizeSecurityGroupIngress: calling handler <function inject_api_version_header_if_needed at 0x1104c4ef0>
+2019-12-10 11:47:23,540 - MainThread - botocore.endpoint - DEBUG - Making request for OperationModel(name=AuthorizeSecurityGroupIngress) with params: {'url_path': '/', 'query_string': '', 'method': 'POST', 'headers': {'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8', 'User-Agent': 'aws-cli/1.16.180 Python/3.7.4 Darwin/18.7.0 botocore/1.12.170'}, 'body': {'Action': 'AuthorizeSecurityGroupIngress', 'Version': '2016-11-15', 'GroupName': 'rancher-cluster-A3A19777-9C37-49DC-B51C-1CEAC5AC3167', 'IpPermissions.1.IpProtocol': 'tcp', 'IpPermissions.1.FromPort': 22, 'IpPermissions.1.ToPort': 22, 'IpPermissions.1.IpRanges.1.CidrIp': '10.0.0.0/16', 'IpPermissions.2.IpProtocol': 'tcp', 'IpPermissions.2.FromPort': 80, 'IpPermissions.2.ToPort': 80, 'IpPermissions.2.IpRanges.1.CidrIp': '10.0.0.0/16', 'IpPermissions.3.IpProtocol': 'tcp', 'IpPermissions.3.FromPort': 443, 'IpPermissions.3.ToPort': 443, 'IpPermissions.3.IpRanges.1.CidrIp': '10.0.0.0/16', 'IpPermissions.4.IpProtocol': 'tcp', 'IpPermissions.4.FromPort': 2379, 'IpPermissions.4.ToPort': 2380, 'IpPermissions.4.IpRanges.1.CidrIp': '10.0.0.0/16', 'IpPermissions.5.IpProtocol': 'tcp', 'IpPermissions.5.FromPort': 6443, 'IpPermissions.5.ToPort': 6443, 'IpPermissions.5.IpRanges.1.CidrIp': '10.0.0.0/16', 'IpPermissions.6.IpProtocol': 'udp', 'IpPermissions.6.FromPort': 8472, 'IpPermissions.6.ToPort': 8472, 'IpPermissions.6.IpRanges.1.CidrIp': '10.0.0.0/16', 'IpPermissions.7.IpProtocol': 'udp', 'IpPermissions.7.FromPort': 4789, 'IpPermissions.7.ToPort': 4789, 'IpPermissions.7.IpRanges.1.CidrIp': '10.0.0.0/16', 'IpPermissions.8.IpProtocol': 'tcp', 'IpPermissions.8.FromPort': 9099, 'IpPermissions.8.ToPort': 9099, 'IpPermissions.8.IpRanges.1.CidrIp': '10.0.0.0/16', 'IpPermissions.9.IpProtocol': 'tcp', 'IpPermissions.9.FromPort': 10250, 'IpPermissions.9.ToPort': 10250, 'IpPermissions.9.IpRanges.1.CidrIp': '10.0.0.0/16', 'IpPermissions.10.IpProtocol': 'tcp', 'IpPermissions.10.FromPort': 10254, 'IpPermissions.10.ToPort': 10254, 'IpPermissions.10.IpRanges.1.CidrIp': '10.0.0.0/16', 'IpPermissions.11.IpProtocol': 'tcp', 'IpPermissions.11.FromPort': 30000, 'IpPermissions.11.ToPort': 32767, 'IpPermissions.11.IpRanges.1.CidrIp': '10.0.0.0/16', 'IpPermissions.12.IpProtocol': 'udp', 'IpPermissions.12.FromPort': 30000, 'IpPermissions.12.ToPort': 32767, 'IpPermissions.12.IpRanges.1.CidrIp': '10.0.0.0/16'}, 'url': 'https://ec2.us-east-2.amazonaws.com/', 'context': {'client_region': 'us-east-2', 'client_config': <botocore.config.Config object at 0x112e02290>, 'has_streaming_input': False, 'auth_type': None}}
+2019-12-10 11:47:23,540 - MainThread - botocore.hooks - DEBUG - Event request-created.ec2.AuthorizeSecurityGroupIngress: calling handler <bound method RequestSigner.handler of <botocore.signers.RequestSigner object at 0x112e02250>>
+2019-12-10 11:47:23,541 - MainThread - botocore.hooks - DEBUG - Event choose-signer.ec2.AuthorizeSecurityGroupIngress: calling handler <function set_operation_specific_signer at 0x1104c13b0>
+2019-12-10 11:47:23,542 - MainThread - botocore.auth - DEBUG - Calculating signature using v4 auth.
+2019-12-10 11:47:23,542 - MainThread - botocore.auth - DEBUG - CanonicalRequest:
+POST
+/
+
+content-type:application/x-www-form-urlencoded; charset=utf-8
+host:ec2.us-east-2.amazonaws.com
+x-amz-date:20191210T154723Z
+
+content-type;host;x-amz-date
+4bb8d5d9f5bd1ca5e5a8f145498e238f17a440a10346cf9419ebc9fbd10b1885
+2019-12-10 11:47:23,542 - MainThread - botocore.auth - DEBUG - StringToSign:
+AWS4-HMAC-SHA256
+20191210T154723Z
+20191210/us-east-2/ec2/aws4_request
+128c903276d572cc472e18aadca4335c4ea7f1d960fb1eb4aa7a48cbd0929f49
+2019-12-10 11:47:23,542 - MainThread - botocore.auth - DEBUG - Signature:
+4153c03676223abc11635f59ceb049148bee02cd18dbc500673ac788f2b4a2ee
+2019-12-10 11:47:23,543 - MainThread - botocore.endpoint - DEBUG - Sending http request: <AWSPreparedRequest stream_output=False, method=POST, url=https://ec2.us-east-2.amazonaws.com/, headers={'Content-Type': b'application/x-www-form-urlencoded; charset=utf-8', 'User-Agent': b'aws-cli/1.16.180 Python/3.7.4 Darwin/18.7.0 botocore/1.12.170', 'X-Amz-Date': b'20191210T154723Z', 'Authorization': b'AWS4-HMAC-SHA256 Credential=OYTG7RXAQW7ZOAR29ZUX/20191210/us-east-2/ec2/aws4_request, SignedHeaders=content-type;host;x-amz-date, Signature=4153c03676223abc11635f59ceb049148bee02cd18dbc500673ac788f2b4a2ee', 'Content-Length': '1772'}>
+2019-12-10 11:47:23,544 - MainThread - urllib3.util.retry - DEBUG - Converted retries value: False -> Retry(total=False, connect=None, read=None, redirect=0, status=None)
+2019-12-10 11:47:23,544 - MainThread - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): ec2.us-east-2.amazonaws.com:443
+2019-12-10 11:47:23,918 - MainThread - urllib3.connectionpool - DEBUG - https://ec2.us-east-2.amazonaws.com:443 "POST / HTTP/1.1" 401 None
+2019-12-10 11:47:23,921 - MainThread - botocore.parsers - DEBUG - Response headers: {'Transfer-Encoding': 'chunked', 'Date': 'Tue, 10 Dec 2019 15:47:23 GMT', 'Server': 'AmazonEC2'}
+2019-12-10 11:47:23,921 - MainThread - botocore.parsers - DEBUG - Response body:
+b'<?xml version="1.0" encoding="UTF-8"?>\n<Response><Errors><Error><Code>AuthFailure</Code><Message>AWS was not able to validate the provided access credentials</Message></Error></Errors><RequestID>ea02093b-ab73-42f3-a466-5fabad517a25</RequestID></Response>'
+2019-12-10 11:47:23,921 - MainThread - botocore.hooks - DEBUG - Event needs-retry.ec2.AuthorizeSecurityGroupIngress: calling handler <botocore.retryhandler.RetryHandler object at 0x112e02690>
+2019-12-10 11:47:23,921 - MainThread - botocore.retryhandler - DEBUG - No retry needed.
+2019-12-10 11:47:23,928 - MainThread - awscli.clidriver - DEBUG - Exception caught in main()
+Traceback (most recent call last):
+  File "/usr/local/Cellar/awscli/1.16.180/libexec/lib/python3.7/site-packages/awscli/clidriver.py", line 207, in main
+    return command_table[parsed_args.command](remaining, parsed_args)
+  File "/usr/local/Cellar/awscli/1.16.180/libexec/lib/python3.7/site-packages/awscli/clidriver.py", line 348, in __call__
+    return command_table[parsed_args.operation](remaining, parsed_globals)
+  File "/usr/local/Cellar/awscli/1.16.180/libexec/lib/python3.7/site-packages/awscli/clidriver.py", line 520, in __call__
+    call_parameters, parsed_globals)
+  File "/usr/local/Cellar/awscli/1.16.180/libexec/lib/python3.7/site-packages/awscli/clidriver.py", line 640, in invoke
+    client, operation_name, parameters, parsed_globals)
+  File "/usr/local/Cellar/awscli/1.16.180/libexec/lib/python3.7/site-packages/awscli/clidriver.py", line 652, in _make_client_call
+    **parameters)
+  File "/usr/local/Cellar/awscli/1.16.180/libexec/lib/python3.7/site-packages/botocore/client.py", line 357, in _api_call
+    return self._make_api_call(operation_name, kwargs)
+  File "/usr/local/Cellar/awscli/1.16.180/libexec/lib/python3.7/site-packages/botocore/client.py", line 661, in _make_api_call
+    raise error_class(parsed_response, operation_name)
+botocore.exceptions.ClientError: An error occurred (AuthFailure) when calling the AuthorizeSecurityGroupIngress operation: AWS was not able to validate the provided access credentials
+2019-12-10 11:47:23,929 - MainThread - awscli.clidriver - DEBUG - Exiting with rc 255
+
+An error occurred (AuthFailure) when calling the AuthorizeSecurityGroupIngress operation: AWS was not able to validate the provided access credentials
