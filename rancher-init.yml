@@ -2,6 +2,7 @@
   - name: Launching instances for Rancher cluster
     hosts: localhost
     gather_facts: False
+    become_user: root
     vars_files:
       - vars/rancher_cluster.yml
 
@@ -98,12 +99,11 @@
               --endpoint "{{ outscale_endpoint }}"
               --output json | jq -r .Reservations[].Instances[].PublicIpAddress >> /tmp/outscale.instance.info
         loop: "{{ rancher_instances.msg }}"
-        register: fcu_instances_publicips
-
+      
       - name: Collect instance ips
         shell: cat /tmp/outscale.instance.info
         register: rancher_public_ips
-      
+
       - debug: msg="{{ rancher_public_ips.stdout_lines }}"
 
       - name: Adding rancher public ips
@@ -124,18 +124,16 @@
           timeout: 60
           state: started
         with_items:
-          - "{{ rancher_public_ips.stdout_lines }}"
+          - "{{ rancher_ips }}"
 
   - name: Rancher node configuration
-    hosts: rancher_public[0]
-    gather_facts: True
-    become: True
+    hosts: rancher_public
+    become: yes
     tasks:
+
       - name: Updating apt
         apt: 
           update_cache: yes
-        become: yes
-        become_user: root
         retries: 5
         delay: 20
         register: ecode
@@ -153,10 +151,6 @@
         apt:
           state: present
           pkg: docker.io
-          
-      - name: Run rancher
-        shell: >
-          docker run -d --restart=unless-stopped -p 80:80 -p 443:443 rancher/rancher
 
       - name: Download Rancher CLI onto all nodes
         get_url:
@@ -169,19 +163,38 @@
           dest: /usr/local
           remote_src: yes
 
-      - name: Waiting for port 443
+  - name: Rancher node configuration
+    hosts: rancher_public[0]
+    become: yes
+    gather_facts: false
+    tasks:
+      
+      - name: Start rancher
+        shell: >
+              docker run -d --restart=unless-stopped -p 80:80 -p 443:443 rancher/rancher
+
+  - name: Wait for rancher to become available
+    hosts: localhost
+    become_user: root
+    gather_facts: false
+    tasks:
+
+      - name: Collect instance ips
+        shell: cat /tmp/outscale.instance.info
+        register: rancher_public_ips
+
+      - name: Waiting for port 80
         wait_for:
-          host: "{{ rancher_zero | first }}"
-          port: 443
+          host: "{{ rancher_public_ips.stdout_lines[0] }}"
+          port: 80
           delay: 60
           timeout: 120
           state: started
 
       - name: Provide instance IP for login and initial setup
         debug: 
-          msg: "Please login to https://{{ rancher_ips | first }} and finish configuration for initial Rancher cluster setup"
+          msg: "Please login to https://{{ rancher_public_ips.stdout_lines[0] }} and finish configuration for initial Rancher cluster setup"
 
       - name: Subsequent IPS for configuration
         debug:
-          msg: "{{ rancher_ips  }}"
-
+          msg: "{{ rancher_public_ips.stdout_lines }}"
