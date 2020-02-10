@@ -163,15 +163,43 @@
           dest: /usr/local
           remote_src: yes
 
+      # Wouldn't it have been nice to have that vault.imedidata.net to pull certs via curl?
+      # Now we have to do it like this
+
+      # Creating a bucket is as follows; Outscale documentation is incorrect
+      # aws s3 mb s3://cloud-operations --profile outscale --endpoint https://osu.us-east-2.outscale.com
+
+      # Adding something to the cloud-operations bucket
+      # aws s3 cp --profile outscale imedidata.net.certs.tar s3://cloud-operations --endpoint https://osu.us-east-2.outscale.com
+
+      - name: Pull from Outscale Storage Unit
+        shell: >
+               aws s3api get-object --profile outscale \
+               --bucket cloud-operations \
+               --key imedidata.net.certs.tar /tmp/imedidata.net.certs.tar \
+               --endpoint {{ outscale_endpoint }}
+
+      - name: Place *.imedidata.net certs
+        shell: >
+           /bin/tar xvf imedidata.net.certs.tar ;\
+           /bin/mv key.key /etc/ssl/private/imedidata.key ;\
+           /bin/mv crt.crt /etc/ssl/private/imedidata.crt ;\
+           /bin/rm /tmp/combined.crt ;\
+           /bin/rm /tmp/imedidata.net.certs.tar ;\
+           /bin/chmod 0644 /etc/ssl/private//imedidata.???
+
   - name: Rancher node configuration
     hosts: rancher_public[0]
     become: yes
     gather_facts: false
     tasks:
-      
+
       - name: Start rancher
         shell: >
-              docker run -d --restart=unless-stopped -p 80:80 -p 443:443 rancher/rancher
+              docker run -d --restart=unless-stopped -p 80:80 -p 443:443
+              -v /etc/ssl/private/imedidata.crt:/etc/rancher/ssl/cert.pem
+              -v /etc/ssl/private/imedidata.key:/etc/rancher/ssl/key.pem 
+              rancher/rancher --no-cacerts
 
   - name: Wait for rancher to become available
     hosts: localhost
