@@ -72,24 +72,24 @@
 
       - name: Remove file (delete file)
         file:
-          path: /tmp/outscale.instance.info
+          path: /tmp/outscale.instance.ips
           state: absent
 
       - name: Write metadata to temp file
         lineinfile:
-          path: /tmp/outscale.instance.info
+          path: /tmp/outscale.instance.ips
           line: "{{ fcu_instance.stdout_lines | to_json }}"
           create: yes
           mode: '0700'
 
       - name: Collect instance ids
-        debug: msg="{{ lookup('file', '/tmp/outscale.instance.info') }}"
+        debug: msg="{{ lookup('file', '/tmp/outscale.instance.ips') }}"
         register: rancher_instances
 
       - debug: msg="{{ rancher_instances.msg }}"
 
       - name: Remove and touch
-        shell: rm /tmp/outscale.instance.info ; touch /tmp/outscale.instance.info
+        shell: /bin/rm /tmp/outscale.instance.ips ; touch /tmp/outscale.instance.ips
 
       - name: Need to run describe to get more metadata
         shell: >
@@ -97,11 +97,11 @@
               --profile "{{ aws_profile }}"
               --instance-id "{{ item }}"
               --endpoint "{{ outscale_endpoint }}"
-              --output json | jq -r .Reservations[].Instances[].PublicIpAddress >> /tmp/outscale.instance.info
+              --output json | jq -r .Reservations[].Instances[].PublicIpAddress >> /tmp/outscale.instance.ips
         loop: "{{ rancher_instances.msg }}"
       
       - name: Collect instance ips
-        shell: cat /tmp/outscale.instance.info
+        shell: /bin/cat /tmp/outscale.instance.ips
         register: rancher_public_ips
 
       - debug: msg="{{ rancher_public_ips.stdout_lines }}"
@@ -174,7 +174,7 @@
 
       - name: Pull from Outscale Storage Unit
         shell: >
-               aws s3api get-object --profile outscale \
+               {{ aws_location.stdout }} s3api get-object --profile "{{ aws_profile }}"\
                --bucket cloud-operations \
                --key imedidata.net.certs.tar /tmp/imedidata.net.certs.tar \
                --endpoint {{ outscale_endpoint }}
@@ -196,7 +196,7 @@
 
       - name: Start rancher
         shell: >
-              docker run -d --restart=unless-stopped -p 80:80 -p 443:443
+              /usr/bin/docker run -d --restart=unless-stopped -p 80:80 -p 443:443
               -v /etc/ssl/private/imedidata.crt:/etc/rancher/ssl/cert.pem
               -v /etc/ssl/private/imedidata.key:/etc/rancher/ssl/key.pem 
               rancher/rancher --no-cacerts
@@ -208,7 +208,7 @@
     tasks:
 
       - name: Collect instance ips
-        shell: cat /tmp/outscale.instance.info
+        shell: /bin/cat /tmp/outscale.instance.ips
         register: rancher_public_ips
 
       - name: Waiting for port 80
@@ -226,3 +226,16 @@
       - name: Subsequent IPS for configuration
         debug:
           msg: "{{ rancher_public_ips.stdout_lines }}"
+
+      # Outscale Load Balancer created using Cockpit
+      # We could do this via the cli and use an error to skip on validation
+      # Not sure, if we'll be using these lb's for the long haul yet though
+      - name: Registering instances with load balancer
+        shell: >
+               {{ aws_location.stdout }} elb register-instances-with-load-balancer \
+               --profile "{{ aws_profile }}" \
+               --load-balancer-name cloudinfra-rancher-k8s \
+               --instances {{ item }} \
+               --endpoint {{ outscale_endpoint }}
+        loop: "{{ rancher_instances.msg }}" 
+      
