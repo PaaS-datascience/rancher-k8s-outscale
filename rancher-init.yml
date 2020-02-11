@@ -91,17 +91,26 @@
       - name: Remove and touch
         shell: /bin/rm /tmp/outscale.instance.ips ; touch /tmp/outscale.instance.ips
 
-      - name: Need to run describe to get more metadata
+      - name: Need to run describe to get public ips
         shell: >
               {{ aws_location.stdout }} ec2 describe-instances
               --profile "{{ aws_profile }}"
               --instance-id "{{ item }}"
               --endpoint "{{ outscale_endpoint }}"
-              --output json | jq -r .Reservations[].Instances[].PublicIpAddress >> /tmp/outscale.instance.ips
+              --output json | jq -r .Reservations[].Instances[].PublicIpAddress >> /tmp/outscale.instance.public.ips
         loop: "{{ rancher_instances.msg }}"
       
+      - name: Need to run describe to get private ips
+        shell: >
+              {{ aws_location.stdout }} ec2 describe-instances
+              --profile "{{ aws_profile }}"
+              --instance-id "{{ item }}"
+              --endpoint "{{ outscale_endpoint }}"
+              --output json | jq -r .Reservations[].Instances[].PrivateIpAddress >> /tmp/outscale.instance.private.ips
+        loop: "{{ rancher_instances.msg }}"  
+
       - name: Collect instance ips
-        shell: /bin/cat /tmp/outscale.instance.ips
+        shell: /bin/cat /tmp/outscale.instance.public.ips
         register: rancher_public_ips
 
       - debug: msg="{{ rancher_public_ips.stdout_lines }}"
@@ -147,10 +156,35 @@
         register: ecode
         until: ecode is success
 
+      - name: Install RKE
+        shell: >
+          /usr/bin/curl -LO https://github.com/rancher/rke/releases/download/v1.0.4/rke_linux-amd64 \;
+          /bin/mv /usr/local/bin/rke_linux-amd64 rke
+        args:
+          chdir: /usr/local/bin
+      
       - name: Install docker
         apt:
           state: present
           pkg: docker.io
+
+      - name: Install Helm
+        snap:
+          name: {{ item }}
+          classic: yes
+          state: present
+        loop:
+          - helm
+          - kubectl
+
+      - name: Add rancher repo
+        shell: /snap/bin/helm repo add rancher-stable https://releases.rancher.com/server-charts/stable
+
+      - name: Install Rancher via Helm for HA 
+        helm:
+          host: localhost
+          chart:
+            name: rancher
 
       - name: Download Rancher CLI onto all nodes
         get_url:
@@ -208,7 +242,7 @@
     tasks:
 
       - name: Collect instance ips
-        shell: /bin/cat /tmp/outscale.instance.ips
+        shell: /bin/cat /tmp/outscale.instance.public.ips
         register: rancher_public_ips
 
       - name: Waiting for port 80
