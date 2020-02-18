@@ -37,6 +37,8 @@
           mode: 0600
           state: file
 
+      # ports to add toself 2379-2380
+      # 10250
       - name: Generate Rancher Cluster Security Group
         shell: >
           {{ aws_location.stdout }} ec2 create-security-group --profile {{ aws_profile }}
@@ -137,8 +139,18 @@
 
   - name: Rancher node configuration
     hosts: rancher_public
+    environment:
+      KUBECONFIG: /home/outscale/kube_config_cluster.yml
     become: yes
     tasks:
+
+      - name: Add generated rsa key to /home/outscale for initial RKE spinup
+        copy:
+          src: /tmp/rancher_id_rsa
+          dest: /home/outscale/rancher_id_rsa
+          owner: outscale
+          group: outscale
+          mode: 0644
 
       - name: Updating apt
         apt: 
@@ -156,21 +168,42 @@
         register: ecode
         until: ecode is success
 
-      - name: Install RKE
-        shell: >
-          /usr/bin/curl -LO https://github.com/rancher/rke/releases/download/v1.0.4/rke_linux-amd64 \;
-          /bin/mv /usr/local/bin/rke_linux-amd64 rke
-        args:
-          chdir: /usr/local/bin
-      
       - name: Install docker
         apt:
           state: present
           pkg: docker.io
 
+      # Add outscale user to docker group on each node
+      - name: Add outscale user to docker group on each node
+        user:
+          name: outscale
+          groups: docker
+          append: yes
+
+      - name: Download RKE
+        shell: >
+          /usr/bin/curl -LO https://github.com/rancher/rke/releases/download/v1.0.4/rke_linux-amd64  |
+        args:
+          chdir: /usr/local/bin
+
+      - name: Rename RKE and +x the bin
+        shell: >
+          /bin/mv /usr/local/bin/rke_linux-amd64 rke ; /bin/chmod +x /usr/local/bin/rke
+
+      - name: Set cluster template
+        template:
+          src: templates/rancher-cluster.j2
+          dest: /home/outscale/cluster.yml
+
+      - name: Spinup initial K8S cluster
+        shell: >
+          /usr/local/bin/rke up --config /home/outscale/cluster.yml
+        args:
+          chdir: /home/outscale
+
       - name: Install Helm
         snap:
-          name: {{ item }}
+          name: "{{ item }}"
           classic: yes
           state: present
         loop:
@@ -178,13 +211,16 @@
           - kubectl
 
       - name: Add rancher repo
-        shell: /snap/bin/helm repo add rancher-stable https://releases.rancher.com/server-charts/stable
+        shell: /snap/bin/helm repo add rancher-latest https://releases.rancher.com/server-charts/latest
 
-      - name: Install Rancher via Helm for HA 
-        helm:
-          host: localhost
-          chart:
-            name: rancher
+      - name: Update helm repo
+        shell: /snap/bin/helm repo update
+
+      - name: Create cloud-infrastructure namespace
+        shell: /snap/bin/kubectl create namespace cloud-infrastructure
+
+      - name: Install Rancher
+        shell: helm install rancher rancher-latest/rancher --namespace cloud-infrastructure --set hostname=cloudinfra-k8s.imedidata.net --set ingress.tls.source=secret
 
       - name: Download Rancher CLI onto all nodes
         get_url:

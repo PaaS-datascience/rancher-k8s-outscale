@@ -2,15 +2,20 @@ nodes:
   - address: {{ rancher_public[0] }}
     internal_address: {{ rancher_private[0] }}
     user: outscale
-    role: [controlplane, worker, etcd]
+    role: [controlplane, etcd]
+    ssh_key_path: /home/outscale/rancher_id_rsa
   - address: {{ rancher_public[1] }}
     internal_address: {{ rancher_private[1] }}
     user: outscale
-    role: [controlplane, worker, etcd]
+    role: [controlplane, etcd]
+    ssh_key_path: /home/outscale/rancher_id_rsa
   - address: {{ rancher_public[2] }}
     internal_address: {{ rancher_private[2] }}
     user: outscale
-    role: [controlplane, worker, etcd]
+    role: [worker]
+    ssh_key_path: /home/outscale/rancher_id_rsa
+
+cluster_name: cloudinfra
 
 services:
   etcd:
