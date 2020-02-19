@@ -74,24 +74,25 @@
 
       - name: Remove file (delete file)
         file:
-          path: /tmp/outscale.instance.ips
+          path: /tmp/{{ item }}
           state: absent
+        loop:
+          - outscale.instance.ids
+          - outscale.instance.public.ips
+          - outscale.instance.private.ips
 
       - name: Write metadata to temp file
         lineinfile:
-          path: /tmp/outscale.instance.ips
+          path: /tmp/outscale.instance.ids
           line: "{{ fcu_instance.stdout_lines | to_json }}"
           create: yes
           mode: '0700'
 
       - name: Collect instance ids
-        debug: msg="{{ lookup('file', '/tmp/outscale.instance.ips') }}"
+        debug: msg="{{ lookup('file', '/tmp/outscale.instance.ids') }}"
         register: rancher_instances
 
       - debug: msg="{{ rancher_instances.msg }}"
-
-      - name: Remove and touch
-        shell: /bin/rm /tmp/outscale.instance.ips ; touch /tmp/outscale.instance.ips
 
       - name: Need to run describe to get public ips
         shell: >
