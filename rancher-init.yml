@@ -48,8 +48,6 @@
           --output json | jq -r .GroupId
         register: secgroup
 
-      # When a standard is figured out and networking is addressed
-      # this will be aligned with the ports needed for custom nodes
       - name: Applying default ingress for all nodes
         shell: >
           {{ aws_location.stdout }} ec2 authorize-security-group-ingress --profile {{ aws_profile }}
@@ -142,6 +140,19 @@
       - set_fact:
           rancher_private_ips: "{{ rancher_private_ips.stdout_lines }}"
 
+      - name: Set updated ingress template
+        template:
+          src: templates/rancher-fcu-nodes-ingress.json.j2
+          dest: /tmp/rancher-fcu-nodes-ingress.json
+        delegate_to: localhost
+
+      - name: Updating ingress for all nodes
+        shell: >
+          {{ aws_location.stdout }} ec2 authorize-security-group-ingress --profile {{ aws_profile }}
+          --group-name rancher-cluster-{{ uuid.stdout }} --region "{{ outscale_region }}"
+          --endpoint-url "{{ outscale_endpoint }}"
+          --cli-input-json file:///tmp/rancher-fcu-nodes-ingress.json
+
       - name: Waiting for ssh
         wait_for:
           host: "{{ item }}"
@@ -215,11 +226,21 @@
           src: templates/rancher-cluster.j2
           dest: /home/outscale/cluster.yml
 
-      - name: Spinup initial K8S cluster
+      - name: Spinup initial K8S cluster; first idempotent run will fail
         shell: >
           /usr/local/bin/rke up --config /home/outscale/cluster.yml
         args:
           chdir: /home/outscale
+        ignore_errors: yes 
+        delegate_to: "{{ hostvars[groups['rancher_public'][0]]['inventory_hostname'] }}"
+
+      - name: Spinup initial K8S cluster; second idempotent run should be successful
+        shell: >
+          /usr/local/bin/rke up --config /home/outscale/cluster.yml
+        args:
+          chdir: /home/outscale
+        ignore_errors: yes 
+        delegate_to: "{{ hostvars[groups['rancher_public'][0]]['inventory_hostname'] }}"
 
       - name: Install Helm
         snap:
