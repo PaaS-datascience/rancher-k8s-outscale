@@ -1,16 +1,16 @@
 nodes:
-  - address: {{ rancher_public[0] }}
-    internal_address: {{ rancher_private[0] }}
+  - address: {{ hostvars[groups['rancher_public'][0]]['inventory_hostname'] }}
+    internal_address: {{ hostvars[groups['rancher_private'][0]]['inventory_hostname'] }}
     user: outscale
     role: [controlplane, etcd]
     ssh_key_path: /home/outscale/rancher_id_rsa
-  - address: {{ rancher_public[1] }}
-    internal_address: {{ rancher_private[1] }}
+  - address: {{ hostvars[groups['rancher_public'][1]]['inventory_hostname'] }}
+    internal_address: {{ hostvars[groups['rancher_private'][1]]['inventory_hostname'] }}
     user: outscale
     role: [controlplane, etcd]
     ssh_key_path: /home/outscale/rancher_id_rsa
-  - address: {{ rancher_public[2] }}
-    internal_address: {{ rancher_private[2] }}
+  - address: {{ hostvars[groups['rancher_public'][2]]['inventory_hostname'] }}
+    internal_address: {{ hostvars[groups['rancher_private'][2]]['inventory_hostname'] }}
     user: outscale
     role: [worker]
     ssh_key_path: /home/outscale/rancher_id_rsa

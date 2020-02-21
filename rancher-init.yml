@@ -112,9 +112,13 @@
               --output json | jq -r .Reservations[].Instances[].PrivateIpAddress >> /tmp/outscale.instance.private.ips
         loop: "{{ rancher_instances.msg }}"  
 
-      - name: Collect instance ips
+      - name: Collect instance public ips
         shell: /bin/cat /tmp/outscale.instance.public.ips
         register: rancher_public_ips
+
+      - name: Collect instance private ips
+        shell: /bin/cat /tmp/outscale.instance.private.ips
+        register: rancher_private_ips
 
       - debug: msg="{{ rancher_public_ips.stdout_lines }}"
 
@@ -124,9 +128,19 @@
           groupname: rancher_public
         with_items:
           - "{{ rancher_public_ips.stdout_lines }}"
+      
+      - name: Adding rancher private ips
+        add_host:
+          hostname: "{{ item }}"
+          groupname: rancher_private
+        with_items:
+          - "{{ rancher_private_ips.stdout_lines }}"
 
       - set_fact:
-          rancher_ips: "{{ rancher_public_ips.stdout_lines }}"
+          rancher_public_ips: "{{ rancher_public_ips.stdout_lines }}"
+
+      - set_fact:
+          rancher_private_ips: "{{ rancher_private_ips.stdout_lines }}"
 
       - name: Waiting for ssh
         wait_for:
@@ -136,14 +150,35 @@
           timeout: 60
           state: started
         with_items:
-          - "{{ rancher_ips }}"
+          - "{{ rancher_public_ips }}"
 
   - name: Rancher node configuration
     hosts: rancher_public
+    gather_facts: false
     environment:
       KUBECONFIG: /home/outscale/kube_config_cluster.yml
     become: yes
+    become_user: root
+
+    pre_tasks:
+    - name: Install inotifytools
+      raw: test -e /usr/bin/python3 || (rm /var/lib/apt/lists/lock && rm /var/lib/dpkg/lock && apt install -qqy inotify-tools)
+      register: output
+      changed_when: output.stdout != ""
+
     tasks:
+
+      - name: Let's make sure there are no lock issues with apt
+        shell: /usr/bin/inotifywait -q -e close /var/lib/dpkg/lock -t 60 ; /bin/rm /var/lib/dpkg/lock
+
+      - name: Updating apt
+        apt: 
+          upgrade: yes
+          update_cache: yes
+        retries: 5
+        delay: 20
+        register: ecode
+        until: ecode is success
 
       - name: Add generated rsa key to /home/outscale for initial RKE spinup
         copy:
@@ -153,28 +188,11 @@
           group: outscale
           mode: 0644
 
-      - name: Updating apt
-        apt: 
-          update_cache: yes
-        retries: 5
-        delay: 20
-        register: ecode
-        until: ecode is success
-
-      - name: Upgrading packages
-        apt: 
-          upgrade: yes
-        retries: 5
-        delay: 20
-        register: ecode
-        until: ecode is success
-
       - name: Install docker
         apt:
           state: present
           pkg: docker.io
 
-      # Add outscale user to docker group on each node
       - name: Add outscale user to docker group on each node
         user:
           name: outscale
@@ -182,14 +200,15 @@
           append: yes
 
       - name: Download RKE
-        shell: >
-          /usr/bin/curl -LO https://github.com/rancher/rke/releases/download/v1.0.4/rke_linux-amd64
-        args:
-          chdir: /usr/local/bin
+        get_url:
+          url: https://github.com/rancher/rke/releases/download/v1.0.4/rke_linux-amd64
+          dest: /usr/local/bin/rke
 
       - name: Rename RKE and +x the bin
         shell: >
-          /bin/mv /usr/local/bin/rke_linux-amd64 rke ; /bin/chmod +x /usr/local/bin/rke
+          /bin/chmod +x /usr/local/bin/rke
+
+      - debug: msg="{{ hostvars }}"
 
       - name: Set cluster template
         template:
@@ -257,20 +276,7 @@
            /bin/mv crt.crt /etc/ssl/private/imedidata.crt ;\
            /bin/rm /tmp/combined.crt ;\
            /bin/rm /tmp/imedidata.net.certs.tar ;\
-           /bin/chmod 0644 /etc/ssl/private//imedidata.???
-
-  - name: Rancher node configuration
-    hosts: rancher_public[0]
-    become: yes
-    gather_facts: false
-    tasks:
-
-      - name: Start rancher
-        shell: >
-              /usr/bin/docker run -d --restart=unless-stopped -p 80:80 -p 443:443
-              -v /etc/ssl/private/imedidata.crt:/etc/rancher/ssl/cert.pem
-              -v /etc/ssl/private/imedidata.key:/etc/rancher/ssl/key.pem 
-              rancher/rancher --no-cacerts
+           /bin/chmod 0644 /etc/ssl/private/imedidata.???
 
   - name: Wait for rancher to become available
     hosts: localhost
