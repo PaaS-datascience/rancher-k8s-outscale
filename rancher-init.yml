@@ -253,7 +253,7 @@
           - kubectl
 
       - name: Add rancher repo
-        shell: /snap/bin/helm repo add rancher-latest https://releases.rancher.com/server-charts/latest
+        shell: /snap/bin/helm repo add rancher-stable https://releases.rancher.com/server-charts/stable
 
       - name: Update helm repo
         shell: /snap/bin/helm repo update
@@ -262,9 +262,14 @@
         shell: /snap/bin/kubectl create namespace cloud-infrastructure
         environment:
           KUBECONFIG: /home/outscale/kube_config_cluster.yml
+        delegate_to: "{{ hostvars[groups['rancher_public'][0]]['inventory_hostname'] }}"
 
       - name: Install Rancher
-        shell: /snap/bin/helm install rancher rancher-latest/rancher --namespace cloud-infrastructure --set hostname=cloudinfra-k8s.imedidata.net --set ingress.tls.source=secret
+        shell: /snap/bin/helm install rancher rancher-stable/rancher \
+          --namespace cloud-infrastructure \
+          --set hostname=cloudinfra-k8s.imedidata.net \
+          --set ingress.tls.source=rancher
+        delegate_to: "{{ hostvars[groups['rancher_public'][0]]['inventory_hostname'] }}"
 
       - name: Download Rancher CLI onto all nodes
         get_url:
@@ -327,16 +332,16 @@
         args:
           chdir: /tmp
 
-      - name: Delete existing generated certs
-        shell: >
-          /snap/bin/kubectl -n cloud-infrastructure delete secret tls-rancher-ingress
-        ignore_errors: yes
+#      - name: Delete existing generated certs
+#        shell: >
+#          /snap/bin/kubectl -n cloud-infrastructure delete secret tls-rancher-ingress
+#        ignore_errors: yes
 
-      - name: Add TLS certs to Rancher
-        shell: >
-          /snap/bin/kubectl -n cloud-infrastructure create secret tls tls-rancher-ingress \
-          --cert=/etc/ssl/private/imedidata.crt \
-          --key=/etc/ssl/private/imedidata.key
+#      - name: Add TLS certs to Rancher
+#        shell: >
+#          /snap/bin/kubectl -n cloud-infrastructure create secret tls tls-rancher-ingress \
+#          --cert=/etc/ssl/private/imedidata.crt \
+#          --key=/etc/ssl/private/imedidata.key
 
   - name: Wait for rancher to become available
     hosts: localhost
@@ -365,7 +370,7 @@
                --profile "{{ aws_profile }}" \
                --load-balancer-name cloudinfra-rancher-k8s \
                --instances {{ item }} \
-               --endpoint {{ outscale_endpoint }}
+               --endpoint https://lbu.us-east-2.outscale.com/
         loop: "{{ rancher_instances.msg }}" 
      
       - name: Waiting for port 80
