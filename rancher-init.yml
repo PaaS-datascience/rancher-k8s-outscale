@@ -330,6 +330,7 @@
       - name: Delete existing generated certs
         shell: >
           /snap/bin/kubectl -n cloud-infrastructure delete secret tls-rancher-ingress
+        ignore_errors: yes
 
       - name: Add TLS certs to Rancher
         shell: >
