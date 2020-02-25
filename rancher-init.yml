@@ -170,6 +170,8 @@
       KUBECONFIG: /home/outscale/kube_config_cluster.yml
     become: yes
     become_user: root
+    vars_files:
+      - vars/rancher_cluster.yml
 
     pre_tasks:
     - name: Install inotifytools
@@ -204,6 +206,11 @@
           state: present
           pkg: docker.io
 
+      - name: Install awscli
+        apt:
+          state: present
+          pkg: awscli
+
       - name: Add outscale user to docker group on each node
         user:
           name: outscale
@@ -232,14 +239,8 @@
         args:
           chdir: /home/outscale
         ignore_errors: yes 
-        delegate_to: "{{ hostvars[groups['rancher_public'][0]]['inventory_hostname'] }}"
-
-      - name: Spinup initial K8S cluster; second idempotent run should be successful
-        shell: >
-          /usr/local/bin/rke up --config /home/outscale/cluster.yml
-        args:
-          chdir: /home/outscale
-        ignore_errors: yes 
+        retries: 5
+        delay: 300
         delegate_to: "{{ hostvars[groups['rancher_public'][0]]['inventory_hostname'] }}"
 
       - name: Install Helm
@@ -259,9 +260,11 @@
 
       - name: Create cloud-infrastructure namespace
         shell: /snap/bin/kubectl create namespace cloud-infrastructure
+        environment:
+          KUBECONFIG: /home/outscale/kube_config_cluster.yml
 
       - name: Install Rancher
-        shell: helm install rancher rancher-latest/rancher --namespace cloud-infrastructure --set hostname=cloudinfra-k8s.imedidata.net --set ingress.tls.source=secret
+        shell: /snap/bin/helm install rancher rancher-latest/rancher --namespace cloud-infrastructure --set hostname=cloudinfra-k8s.imedidata.net --set ingress.tls.source=secret
 
       - name: Download Rancher CLI onto all nodes
         get_url:
@@ -283,21 +286,56 @@
       # Adding something to the cloud-operations bucket
       # aws s3 cp --profile outscale imedidata.net.certs.tar s3://cloud-operations --endpoint https://osu.us-east-2.outscale.com
 
+      - name: Which aws cli
+        shell: which aws
+        register: aws_location
+        delegate_to: localhost
+        run_once: true
+        become: no
+      
+      - name: Remove existing archive if it is exists
+        file:
+          path: /tmp/imedidata.net.certs.tar
+          state: absent
+        delegate_to: localhost
+        run_once: true
+        become: no
+      
       - name: Pull from Outscale Storage Unit
         shell: >
-               {{ aws_location.stdout }} s3api get-object --profile "{{ aws_profile }}"\
+               {{ aws_location.stdout }} s3api get-object --profile {{ aws_profile }} \
                --bucket cloud-operations \
                --key imedidata.net.certs.tar /tmp/imedidata.net.certs.tar \
-               --endpoint {{ outscale_endpoint }}
+               --endpoint {{ outscale_object_endpoint }}
+        delegate_to: localhost
+        run_once: true
+        become: no
+
+      - name: Copy /tmp/imedidata.net.certs.tar to nodes
+        copy:
+          src: /tmp/imedidata.net.certs.tar 
+          dest: /tmp/imedidata.net.certs.tar 
 
       - name: Place *.imedidata.net certs
-        shell: >
-           /bin/tar xvf imedidata.net.certs.tar ;\
-           /bin/mv key.key /etc/ssl/private/imedidata.key ;\
-           /bin/mv crt.crt /etc/ssl/private/imedidata.crt ;\
-           /bin/rm /tmp/combined.crt ;\
-           /bin/rm /tmp/imedidata.net.certs.tar ;\
+        shell: |
+           /bin/tar xvf imedidata.net.certs.tar
+           /bin/mv key.key /etc/ssl/private/imedidata.key
+           /bin/mv crt.crt /etc/ssl/private/imedidata.crt
+           /bin/rm /tmp/combined.crt
+           /bin/rm /tmp/imedidata.net.certs.tar
            /bin/chmod 0644 /etc/ssl/private/imedidata.???
+        args:
+          chdir: /tmp
+
+      - name: Delete existing generated certs
+        shell: >
+          /snap/bin/kubectl -n cloud-infrastructure delete secret tls-rancher-ingress
+
+      - name: Add TLS certs to Rancher
+        shell: >
+          /snap/bin/kubectl -n cloud-infrastructure create secret tls tls-rancher-ingress \
+          --cert=/etc/ssl/private/imedidata.crt \
+          --key=/etc/ssl/private/imedidata.key
 
   - name: Wait for rancher to become available
     hosts: localhost
@@ -308,14 +346,6 @@
       - name: Collect instance ips
         shell: /bin/cat /tmp/outscale.instance.public.ips
         register: rancher_public_ips
-
-      - name: Waiting for port 80
-        wait_for:
-          host: "{{ rancher_public_ips.stdout_lines[0] }}"
-          port: 80
-          delay: 60
-          timeout: 120
-          state: started
 
       - name: Provide instance IP for login and initial setup
         debug: 
@@ -336,4 +366,11 @@
                --instances {{ item }} \
                --endpoint {{ outscale_endpoint }}
         loop: "{{ rancher_instances.msg }}" 
-      
+     
+      - name: Waiting for port 80
+        wait_for:
+          host: "{{ rancher_public_ips.stdout_lines[0] }}"
+          port: 80
+          delay: 60
+          timeout: 120
+          state: started
