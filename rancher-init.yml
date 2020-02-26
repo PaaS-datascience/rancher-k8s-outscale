@@ -262,14 +262,12 @@
         shell: /snap/bin/kubectl create namespace cloud-infrastructure
         environment:
           KUBECONFIG: /home/outscale/kube_config_cluster.yml
-        delegate_to: "{{ hostvars[groups['rancher_public'][0]]['inventory_hostname'] }}"
 
       - name: Install Rancher
         shell: /snap/bin/helm install rancher rancher-stable/rancher \
           --namespace cloud-infrastructure \
-          --set hostname=cloudinfra-k8s.imedidata.net \
-          --set ingress.tls.source=rancher
-        delegate_to: "{{ hostvars[groups['rancher_public'][0]]['inventory_hostname'] }}"
+          --set hostname=cloudinfra-k8s.imedidata.net
+          --set ingress.tls.source=secret
 
       - name: Download Rancher CLI onto all nodes
         get_url:
@@ -332,16 +330,16 @@
         args:
           chdir: /tmp
 
-#      - name: Delete existing generated certs
-#        shell: >
-#          /snap/bin/kubectl -n cloud-infrastructure delete secret tls-rancher-ingress
-#        ignore_errors: yes
+      - name: Delete existing generated certs
+        shell: >
+          /snap/bin/kubectl -n cloud-infrastructure delete secret tls-rancher-ingress
+        ignore_errors: yes
 
-#      - name: Add TLS certs to Rancher
-#        shell: >
-#          /snap/bin/kubectl -n cloud-infrastructure create secret tls tls-rancher-ingress \
-#          --cert=/etc/ssl/private/imedidata.crt \
-#          --key=/etc/ssl/private/imedidata.key
+      - name: Add TLS certs to Rancher
+        shell: >
+          /snap/bin/kubectl -n cloud-infrastructure create secret tls tls-rancher-ingress \
+          --cert=/etc/ssl/private/imedidata.crt \
+          --key=/etc/ssl/private/imedidata.key
 
   - name: Wait for rancher to become available
     hosts: localhost
