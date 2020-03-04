@@ -259,14 +259,14 @@
         shell: /snap/bin/helm repo update
 
       - name: Create cloud-infrastructure namespace
-        shell: /snap/bin/kubectl create namespace cloud-infrastructure
+        shell: /snap/bin/kubectl create namespace {{ k8s_cluster_namespace }}
         environment:
           KUBECONFIG: /home/outscale/kube_config_cluster.yml
 
       - name: Install Rancher
         shell: /snap/bin/helm install rancher rancher-stable/rancher \
-          --namespace cloud-infrastructure \
-          --set hostname=cloudinfra-k8s.imedidata.net
+          --namespace {{ k8s_cluster_namespace}} \
+          --set hostname={{ k8s_cluster_hostname }}-k8s.imedidata.net
           --set ingress.tls.source=secret
 
       - name: Download Rancher CLI onto all nodes

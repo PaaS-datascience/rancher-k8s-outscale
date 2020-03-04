@@ -4,6 +4,8 @@ outscale_endpoint: https://fcu.us-east-2.outscale.com
 outscale_object_endpoint: https://osu.us-east-2.outscale.com
 outscale_instance_type: "tinav5.c2r4p1"
 outscale_region: us-east-2
+k8s_cluster_namespace: cloud-infrastructure
+k8s_cluster_hostname: cloudinfra
 aws_profile: outscale
 rancher_node_count: 3
 security_ingress: rancher-general-ingress.json
