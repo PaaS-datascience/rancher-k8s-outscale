@@ -26,14 +26,14 @@
           --key-name rancher-cluster-{{ uuid.stdout }}
           --endpoint {{ outscale_endpoint }}
           --query 'KeyMaterial'
-          --output text > /tmp/rancher_id_rsa
+          --output text > /tmp/rancher_id_rsa_{{ uuid.stdout }}
         register: cluster_keypair
 
       - debug: msg="{{ cluster_keypair }}"
 
       - name: Set key mode
         file:
-          path: /tmp/rancher_id_rsa
+          path: /tmp/rancher_id_rsa_{{ uuid.stdout }}
           mode: 0600
           state: file
 
@@ -355,22 +355,41 @@
         debug: 
           msg: "Please login to https://{{ rancher_public_ips.stdout_lines[0] }} and finish configuration for initial Rancher cluster setup"
 
+      # Setup an API Key via the UI
+      # Copy the bearer token and configure rancher cli
+      # Use rancher cli to setup Okta
+      - name: Updating ingress for all nodes; allow 
+        shell: >
+          {{ aws_location.stdout }} ec2 authorize-security-group-ingress --profile {{ aws_profile }}
+          --group-name rancher-cluster-{{ uuid.stdout }} --region "{{ outscale_region }}"
+          --endpoint-url "{{ outscale_endpoint }}"
+          --cli-input-json file:///tmp/rancher-fcu-nodes-ingress.json
+
+      - name: Set rancher settings
+        shell:
+          /usr/local/rancher-v2.3.2/rancher settings set ui-pl medidata
+          /usr/local/rancher-v2.3.2/rancher settings set server-url https://cloudinfra-k8s.imedidata.net
+          /usr/local/rancher-v2.3.2/rancher settings set ingress-ip-domain imedidata.net
+
       - name: Subsequent IPS for configuration
         debug:
           msg: "{{ rancher_public_ips.stdout_lines }}"
 
       # Outscale Load Balancer created using Cockpit
-      # We could do this via the cli and use an error to skip on validation
-      # Not sure, if we'll be using these lb's for the long haul yet though
-      - name: Registering instances with load balancer
-        shell: >
-               {{ aws_location.stdout }} elb register-instances-with-load-balancer \
-               --profile "{{ aws_profile }}" \
-               --load-balancer-name cloudinfra-rancher-k8s \
-               --instances {{ item }} \
-               --endpoint https://lbu.us-east-2.outscale.com/
-        loop: "{{ rancher_instances.msg }}" 
-     
+      # LB support via Outscale isn't a mature service
+      # This is disabled for now, round robin via Route 53
+      # will be used in place
+      #- name: Registering instances with load balancer
+      #  shell: >
+      #         {{ aws_location.stdout }} elb register-instances-with-load-balancer \
+      #         --profile "{{ aws_profile }}" \
+      #         --load-balancer-name cloudinfra-rancher-k8s \
+      #         --instances {{ item }} \
+      #         --endpoint https://lbu.us-east-2.outscale.com/
+      #  loop: "{{ rancher_instances.msg }}" 
+    
+      
+
       - name: Waiting for port 80
         wait_for:
           host: "{{ rancher_public_ips.stdout_lines[0] }}"
