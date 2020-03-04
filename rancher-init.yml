@@ -368,7 +368,7 @@
       - name: Set rancher settings
         shell:
           /usr/local/rancher-v2.3.2/rancher settings set ui-pl medidata
-          /usr/local/rancher-v2.3.2/rancher settings set server-url https://cloudinfra-k8s.imedidata.net
+          /usr/local/rancher-v2.3.2/rancher settings set server-url https://{{ k8s_cluster_hostname }}-k8s.imedidata.net
           /usr/local/rancher-v2.3.2/rancher settings set ingress-ip-domain imedidata.net
 
       - name: Subsequent IPS for configuration
