@@ -1,0 +1,13 @@
+{
+            "Comment": "Generated A record for k8s cluster {{ k8s_cluster_hostname }} ",
+            "Changes": [{
+            "Action": "UPSERT",
+                        "ResourceRecordSet": {
+                                    "Name": "{{ k8s_cluster_hostname }}-k8s.imedidata.net",
+                                    "Type": "A",
+                                    "TTL": 300,
+                                 "ResourceRecords": [{ "Value": "{{ hostvars[groups['rancher_public'][0]]['inventory_hostname'] }}" },
+                                                     { "Value": "{{ hostvars[groups['rancher_public'][1]]['inventory_hostname'] }}" },
+                                                     { "Value": "{{ hostvars[groups['rancher_public'][2]]['inventory_hostname'] }}" }]
+}}]
+}

@@ -29,13 +29,21 @@
           --output text > /tmp/rancher_id_rsa_{{ uuid.stdout }}
         register: cluster_keypair
 
-      - debug: msg="{{ cluster_keypair }}"
-
-      - name: Set key mode
+      
+      - name: Hard link key to /tmp/rancher_id_rsa
         file:
-          path: /tmp/rancher_id_rsa_{{ uuid.stdout }}
+          src: /tmp/rancher_id_rsa_{{ uuid.stdout }}
+          dest: /tmp/rancher_id_rsa
           mode: 0600
-          state: file
+          state: hard
+
+      - name: Set mode on hard link
+        file:
+          path: /tmp/rancher_id_rsa
+          src: /tmp/rancher_id_rsa
+          mode: 0600
+
+      - debug: msg="{{ cluster_keypair }}"
 
       # ports to add toself 2379-2380
       # 10250
@@ -258,7 +266,7 @@
       - name: Update helm repo
         shell: /snap/bin/helm repo update
 
-      - name: Create cloud-infrastructure namespace
+      - name: Create namespace
         shell: /snap/bin/kubectl create namespace {{ k8s_cluster_namespace }}
         environment:
           KUBECONFIG: /home/outscale/kube_config_cluster.yml
@@ -340,11 +348,17 @@
           /snap/bin/kubectl -n {{ k8s_cluster_namespace }} create secret tls tls-rancher-ingress \
           --cert=/etc/ssl/private/imedidata.crt \
           --key=/etc/ssl/private/imedidata.key
+        retries: 5
+        delay: 60
+        register: ecode
+        until: ecode is success
 
   - name: Wait for rancher to become available
     hosts: localhost
     become_user: root
     gather_facts: false
+    vars_files:
+      - vars/rancher_cluster.yml
     tasks:
 
       - name: Collect instance ips
@@ -355,21 +369,30 @@
         debug: 
           msg: "Please login to https://{{ rancher_public_ips.stdout_lines[0] }} and finish configuration for initial Rancher cluster setup"
 
+      - name: Set route53 change-resource-record-sets template
+        template:
+          src: templates/rancher-cluster-route53.j2
+          dest: /tmp/rancher-cluster-route53.json
+        delegate_to: localhost
+
+      # Z1G33JXZ3XRD06 is the hosted zone id in route53 for imedidata.net
+      # Lets leave this hard coded for now
+      - name: Creating A record via route53 using route53 aws profile
+        shell: >
+         {{ aws_location.stdout }} route53 change-resource-record-sets --profile {{ route53_profile }} \
+         --hosted-zone-id Z1G33JXZ3XRD06 \
+         --change-batch file:///tmp/rancher-cluster-route53.json
+
       # Setup an API Key via the UI
       # Copy the bearer token and configure rancher cli
       # Use rancher cli to setup Okta
-      - name: Updating ingress for all nodes; allow 
-        shell: >
-          {{ aws_location.stdout }} ec2 authorize-security-group-ingress --profile {{ aws_profile }}
-          --group-name rancher-cluster-{{ uuid.stdout }} --region "{{ outscale_region }}"
-          --endpoint-url "{{ outscale_endpoint }}"
-          --cli-input-json file:///tmp/rancher-fcu-nodes-ingress.json
-
-      - name: Set rancher settings
-        shell:
-          /usr/local/rancher-v2.3.2/rancher settings set ui-pl medidata
-          /usr/local/rancher-v2.3.2/rancher settings set server-url https://{{ k8s_cluster_hostname }}-k8s.imedidata.net
-          /usr/local/rancher-v2.3.2/rancher settings set ingress-ip-domain imedidata.net
+    
+      #- name: Set rancher settings
+      #  shell:
+      #    /usr/local/rancher-v2.3.2/rancher settings set ui-pl medidata
+      #    /usr/local/rancher-v2.3.2/rancher settings set server-url https://{{ k8s_cluster_hostname }}-k8s.imedidata.net
+      #    /usr/local/rancher-v2.3.2/rancher settings set ingress-ip-domain imedidata.net
+      #  delegate_to: "{{ hostvars[groups['rancher_public'][0]]['inventory_hostname'] }}"
 
       - name: Subsequent IPS for configuration
         debug:
@@ -387,9 +410,7 @@
       #         --instances {{ item }} \
       #         --endpoint https://lbu.us-east-2.outscale.com/
       #  loop: "{{ rancher_instances.msg }}" 
-    
       
-
       - name: Waiting for port 80
         wait_for:
           host: "{{ rancher_public_ips.stdout_lines[0] }}"
