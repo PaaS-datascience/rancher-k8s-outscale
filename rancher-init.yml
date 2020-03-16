@@ -386,17 +386,6 @@
          --hosted-zone-id Z1G33JXZ3XRD06 \
          --change-batch file:///tmp/rancher-cluster-route53.json
 
-      # Setup an API Key via the UI
-      # Copy the bearer token and configure rancher cli
-      # Use rancher cli to setup Okta
-    
-      #- name: Set rancher settings
-      #  shell:
-      #    /usr/local/rancher-v2.3.2/rancher settings set ui-pl medidata
-      #    /usr/local/rancher-v2.3.2/rancher settings set server-url https://{{ k8s_cluster_hostname }}-k8s.imedidata.net
-      #    /usr/local/rancher-v2.3.2/rancher settings set ingress-ip-domain imedidata.net
-      #  delegate_to: "{{ hostvars[groups['rancher_public'][0]]['inventory_hostname'] }}"
-
       - name: Subsequent IPS for configuration
         debug:
           msg: "{{ rancher_public_ips.stdout_lines }}"
