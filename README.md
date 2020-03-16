@@ -4,6 +4,7 @@ Configures a Generic Rancher Cluster that is operationally ready and available t
 
 ## Requirements
 [The Amazon Command line interface is required](https://aws.amazon.com/cli/)
+
 The following configuration:
 
     [profile outscale]
