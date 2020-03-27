@@ -26,17 +26,17 @@ The following configuration:
     rancher_node_count: 3
     security_ingress: rancher-general-ingress.json
 
-**outscale_rancher_image**: This is the outscale machine image as located in Outscale.
-**outscale_endpoint**: The Flexible Compute Unit endpoint to target
- **outscale_object_endpoint**: The Object Storage Unit endpoint to target
- **outscale_instance_type**: The Outscale [instance type](https://wiki.outscale.net/display/EN/Instance+Types) to target
- **outscale_region**: The Outscale [Region](https://wiki.outscale.net/display/EN/Regions,+Endpoints+and+Availability+Zones+Reference)
- **k8s_cluster_namespace**: The namespace for the cluster
- **k8s_cluster_hostname**: The hostname for the cluster, the complete fqdn will be *k8s_cluster_hostname-k8s*.imedidata.net
- **aws_profile**: The awscli profile to use for outscale
- **route53_profile**: The awscli profile to use to access out AWS RED account
- **rancher_node_count**: Initial node count
- **security_ingress**: The current security ingress profile/ports for the cluster
+**outscale_rancher_image**: This is the outscale machine image as located in Outscale.  
+**outscale_endpoint**: The Flexible Compute Unit endpoint to target  
+ **outscale_object_endpoint**: The Object Storage Unit endpoint to target  
+ **outscale_instance_type**: The Outscale [instance type](https://wiki.outscale.net/display/EN/Instance+Types) to target  
+ **outscale_region**: The Outscale [Region](https://wiki.outscale.net/display/EN/Regions,+Endpoints+and+Availability+Zones+Reference)  
+ **k8s_cluster_namespace**: The namespace for the cluster  
+ **k8s_cluster_hostname**: The hostname for the cluster, the complete fqdn will be *k8s_cluster_hostname-k8s*.imedidata.net  
+ **aws_profile**: The awscli profile to use for outscale  
+ **route53_profile**: The awscli profile to use to access out AWS RED account  
+ **rancher_node_count**: Initial node count  
+ **security_ingress**: The current security ingress profile/ports for the cluster  
  
  ## Starting the cluster
  
